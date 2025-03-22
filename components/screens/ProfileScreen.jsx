@@ -18,7 +18,7 @@ export default function ProfileScreen() {
       <View style={styles.profileHeader}>
         <Image source={{ uri: "https://via.placeholder.com/150" }} style={styles.profileImage} />
         <Text style={styles.profileName}>Mauricio Rico</Text>
-        <Text style={styles.profileEmail}>mau.rico@gmail.com</Text>
+        <Text style={styles.profileEmail}>mauricio.rico@gmail.com</Text>
         <TouchableOpacity style={styles.editButton}>
           <Text style={styles.editButtonText}>Editar perfil</Text>
         </TouchableOpacity>
