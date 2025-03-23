@@ -132,7 +132,7 @@ export default function ProfileScreen() {
       </TouchableOpacity>
 
       <View style={styles.footer}>
-        <Text style={styles.footerText}>Explorador de películas v1.0</Text>
+        <Text style={styles.footerText}>CineFanatic v1.0</Text>
         <Text style={styles.footerText}>Desarrollado por la API TMDB</Text>
       </View>
     </ScrollView>
