@@ -104,7 +104,7 @@ export default function ProfileScreen() {
         <TouchableOpacity style={styles.menuItem}>
           <View style={styles.menuInfo}>
             <Ionicons name="information-circle-outline" size={24} color="#032541" />
-            <Text style={styles.menuText}>Acerca del Explorador de películas</Text>
+            <Text style={styles.menuText}>Acerca de CineFanatic</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color="#999" />
         </TouchableOpacity>
