@@ -11,20 +11,36 @@ import {
   ActivityIndicator,
   StatusBar,
   TextInput,
+  Alert,
 } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { API_KEY, API_BASE_URL } from "../../assets/config"
+import { useAuth } from "../context/AuthContext"
+
 export default function HomeScreen() {
   const navigation = useNavigation()
+  const { userData, userToken, logout } = useAuth() // Acceder al contexto de autenticación
+
   const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [searching, setSearching] = useState(false)
 
+  // Verificar autenticación al cargar
   useEffect(() => {
+    console.log("HomeScreen - Estado de autenticación:", userToken ? "Autenticado" : "No autenticado")
+    console.log("HomeScreen - Datos de usuario:", userData?.name || "No hay datos")
+
+    // Si no hay token, redirigir al login
+    if (!userToken) {
+      console.log("No hay token, redirigiendo a Login")
+      navigation.navigate("Login")
+      return
+    }
+
     fetchPopularMovies()
-  }, [])
+  }, [userToken, userData, navigation])
 
   const fetchPopularMovies = async () => {
     try {
@@ -91,6 +107,28 @@ export default function HomeScreen() {
     )
   }
 
+  // Función para manejar la navegación al perfil
+  const handleProfileNavigation = () => {
+    // Verificar que el usuario esté autenticado antes de navegar
+    if (userToken && userData) {
+      console.log("Navegando a Profile")
+      navigation.navigate("Profile")
+    } else {
+      console.warn("Usuario no autenticado, no se puede navegar al perfil")
+      Alert.alert("Error", "No se puede acceder al perfil. Por favor, inicia sesión nuevamente.")
+
+      // El logout se encargará de la navegación
+      logout()
+    }
+  }
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    logout()
+    // Navegar al login - esto funcionará porque el cambio en el estado de autenticación
+    // hará que el navegador principal cambie a las rutas de autenticación
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#032541" />
@@ -119,8 +157,14 @@ export default function HomeScreen() {
           )}
         </View>
 
-        <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate("Profile")}>
+        <TouchableOpacity style={styles.profileButton} onPress={handleProfileNavigation}>
           <Ionicons name="person-circle-outline" size={28} color="#032541" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.debugButton} onPress={() => navigation.navigate("Debug")}>
+          <Ionicons name="bug-outline" size={28} color="#032541" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={28} color="#FF6B6B" />
         </TouchableOpacity>
       </View>
 
@@ -192,6 +236,12 @@ const styles = StyleSheet.create({
   profileButton: {
     marginLeft: 12,
   },
+  debugButton: {
+    marginLeft: 8,
+  },
+  logoutButton: {
+    marginLeft: 8,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
@@ -257,4 +307,3 @@ const styles = StyleSheet.create({
     color: "#666",
   },
 })
-

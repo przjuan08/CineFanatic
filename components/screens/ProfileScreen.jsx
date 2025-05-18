@@ -1,24 +1,77 @@
 "use client"
 
-import { useState } from "react"
-import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView, Image } from "react-native"
+import { useState, useEffect } from "react"
+import { View, Text, StyleSheet, Switch, TouchableOpacity, ScrollView, Image, Alert } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { useAuth } from "../context/AuthContext"
+import { useNavigation } from "@react-navigation/native"
 
 export default function ProfileScreen() {
+  const navigation = useNavigation()
+  const { userData, userToken, logout } = useAuth()
+
   const [darkMode, setDarkMode] = useState(false)
   const [notifications, setNotifications] = useState(true)
   const [adultContent, setAdultContent] = useState(false)
+
+  // Verificar autenticación al cargar
+  useEffect(() => {
+    console.log("ProfileScreen - Estado de autenticación:", userToken ? "Autenticado" : "No autenticado")
+    console.log("ProfileScreen - Datos de usuario:", userData?.name || "No hay datos")
+
+    // Si no hay token o datos de usuario, redirigir al login
+    if (!userToken || !userData) {
+      console.log("No hay token o datos de usuario, redirigiendo a Login")
+      navigation.navigate("Login")
+      return
+    }
+  }, [userToken, userData, navigation])
 
   const toggleDarkMode = () => setDarkMode((previousState) => !previousState)
   const toggleNotifications = () => setNotifications((previousState) => !previousState)
   const toggleAdultContent = () => setAdultContent((previousState) => !previousState)
 
+  const handleLogout = async () => {
+    Alert.alert("Cerrar sesión", "¿Estás seguro de que quieres cerrar sesión?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Cerrar sesión",
+        onPress: async () => {
+          // Primero cerrar sesión, lo que actualizará el estado de autenticación
+          await logout()
+          // No intentamos navegar aquí, el sistema de navegación responderá al cambio de estado
+        },
+        style: "destructive",
+      },
+    ])
+  }
+
+  // Si no hay datos de usuario, no renderizar el contenido del perfil
+  if (!userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Cargando perfil...</Text>
+      </View>
+    )
+  }
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.profileHeader}>
-        <Image source={{ uri: "https://via.placeholder.com/150" }} style={styles.profileImage} />
-        <Text style={styles.profileName}>Mauricio Rico</Text>
-        <Text style={styles.profileEmail}>mauricio.rico@gmail.com</Text>
+        <Image
+          source={{
+            uri:
+              "https://ui-avatars.com/api/?name=" +
+              encodeURIComponent(userData?.name || "Usuario") +
+              "&background=032541&color=fff",
+          }}
+          style={styles.profileImage}
+        />
+        <Text style={styles.profileName}>{userData?.name || "Usuario"}</Text>
+        <Text style={styles.profileEmail}>{userData?.email || "usuario@ejemplo.com"}</Text>
         <TouchableOpacity style={styles.editButton}>
           <Text style={styles.editButtonText}>Editar perfil</Text>
         </TouchableOpacity>
@@ -126,7 +179,7 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={20} color="white" />
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
@@ -142,6 +195,12 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#f5f5f5",
   },
   profileHeader: {
@@ -249,4 +308,3 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 })
-

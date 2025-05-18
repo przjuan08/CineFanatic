@@ -14,31 +14,39 @@ import {
 import { useRoute } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { API_KEY, API_BASE_URL } from "../../assets/config"
+import { useAuth } from "../context/AuthContext"
 
 const { width } = Dimensions.get("window")
 
 export default function DetailsScreen() {
   const route = useRoute()
   const { id } = route.params
+  const { toggleFavorite, isFavorite } = useAuth()
 
   const [movie, setMovie] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [isFavorite, setIsFavorite] = useState(false)
+  const [favoriteStatus, setFavoriteStatus] = useState(false)
 
   const estadosPeliculas = {
-    "Rumored": "Rumoreada",
-    "Planned": "Planificada",
+    Rumored: "Rumoreada",
+    Planned: "Planificada",
     "In Production": "En producción",
     "Post Production": "Postproducción",
-    "Released": "Estrenada",
-    "Canceled": "Cancelada"
+    Released: "Estrenada",
+    Canceled: "Cancelada",
   }
-  
-  
+
   useEffect(() => {
     fetchMovieDetails()
   }, [])
+
+  // Verificar si la película está en favoritos cuando se carga
+  useEffect(() => {
+    if (id) {
+      setFavoriteStatus(isFavorite(id.toString()))
+    }
+  }, [id, isFavorite])
 
   const fetchMovieDetails = async () => {
     try {
@@ -51,20 +59,23 @@ export default function DetailsScreen() {
       }
 
       const data = await response.json()
-      
+
       setMovie(data)
-      
       setLoading(false)
-      
     } catch (error) {
       console.error("Error al obtener los detalles de la película:", error)
       setError(error.message)
       setLoading(false)
     }
   }
-  
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite)
+
+  const handleToggleFavorite = async () => {
+    if (id) {
+      const success = await toggleFavorite(id.toString())
+      if (success) {
+        setFavoriteStatus(!favoriteStatus)
+      }
+    }
   }
 
   if (loading) {
@@ -97,7 +108,6 @@ export default function DetailsScreen() {
     return cast.map((person) => (
       <View key={person.id} style={styles.castItem}>
         <Image
-        
           source={{
             uri: person.profile_path
               ? `https://image.tmdb.org/t/p/w185${person.profile_path}`
@@ -119,7 +129,6 @@ export default function DetailsScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.backdropContainer}>
         <Image
-        
           source={{
             uri: movie.backdrop_path
               ? `https://image.tmdb.org/t/p/w780${movie.backdrop_path}`
@@ -127,8 +136,12 @@ export default function DetailsScreen() {
           }}
           style={styles.backdropImage}
         />
-        <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
-          <Ionicons name={isFavorite ? "heart" : "heart-outline"} size={28} color={isFavorite ? "#FF6B6B" : "white"} />
+        <TouchableOpacity style={styles.favoriteButton} onPress={handleToggleFavorite}>
+          <Ionicons
+            name={favoriteStatus ? "heart" : "heart-outline"}
+            size={28}
+            color={favoriteStatus ? "#FF6B6B" : "white"}
+          />
         </TouchableOpacity>
       </View>
 
@@ -142,7 +155,7 @@ export default function DetailsScreen() {
             }}
             style={styles.posterImage}
           />
-        
+
           <View style={styles.headerInfo}>
             <Text style={styles.title}>{movie.title}</Text>
             <Text style={styles.releaseDate}>
@@ -178,14 +191,10 @@ export default function DetailsScreen() {
           </ScrollView>
         </View>
 
-        
-
         <View style={styles.infoSection}>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Estado</Text>
-            <Text style={styles.infoValue}>
-              {estadosPeliculas[movie.status] || movie.status}
-            </Text>
+            <Text style={styles.infoValue}>{estadosPeliculas[movie.status] || movie.status}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Presupuesto</Text>
@@ -358,4 +367,3 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 })
-

@@ -2,10 +2,8 @@
 
 import React, { useEffect } from "react"
 import { View, Text, StyleSheet, Image, Animated } from "react-native"
-import { useNavigation } from "@react-navigation/native"
 
 export default function SplashScreen() {
-  const navigation = useNavigation()
   const fadeAnim = React.useRef(new Animated.Value(0)).current
 
   useEffect(() => {
@@ -21,13 +19,8 @@ export default function SplashScreen() {
         delay: 1000,
         useNativeDriver: true,
       }),
-    ]).start(() => {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Home" }],
-      })
-    })
-  }, [fadeAnim, navigation])
+    ]).start()
+  }, [fadeAnim])
 
   return (
     <View style={styles.container}>
