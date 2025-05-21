@@ -2,8 +2,10 @@
 
 import React, { useEffect } from "react"
 import { View, Text, StyleSheet, Image, Animated } from "react-native"
+import { useTheme } from "../context/ThemeContext"
 
 export default function SplashScreen() {
+  const { theme } = useTheme()
   const fadeAnim = React.useRef(new Animated.Value(0)).current
 
   useEffect(() => {
@@ -22,8 +24,18 @@ export default function SplashScreen() {
     ]).start()
   }, [fadeAnim])
 
+  // Estilos dinámicos basados en el tema
+  const dynamicStyles = {
+    container: {
+      backgroundColor: theme.primary, // Usamos el color primario del tema para mantener la identidad de marca
+    },
+    title: {
+      color: "white", // Mantenemos el texto en blanco para mejor contraste con el fondo primario
+    },
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dynamicStyles.container]}>
       <Animated.View style={{ opacity: fadeAnim }}>
         <View style={styles.logoContainer}>
           <Image
@@ -33,7 +45,7 @@ export default function SplashScreen() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.title}>CineFanatic</Text>
+          <Text style={[styles.title, dynamicStyles.title]}>CineFanatic</Text>
         </View>
       </Animated.View>
     </View>
@@ -43,7 +55,6 @@ export default function SplashScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#032541",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -58,6 +69,5 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 24,
     fontWeight: "bold",
-    color: "white",
   },
 })

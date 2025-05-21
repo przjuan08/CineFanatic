@@ -17,6 +17,7 @@ import {
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { clearAuthData, checkStorage } from "../../ClearStorage"
 
@@ -24,6 +25,7 @@ import { clearAuthData, checkStorage } from "../../ClearStorage"
 const LoginScreen = () => {
   const navigation = useNavigation()
   const { login, error, isLoading } = useAuth()
+  const { theme } = useTheme()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -130,9 +132,45 @@ const LoginScreen = () => {
     Alert.alert("Datos limpiados", "Los datos de autenticación han sido eliminados")
   }
 
+  // Estilos dinámicos basados en el tema
+  const dynamicStyles = {
+    container: {
+      backgroundColor: theme.background,
+    },
+    appName: {
+      color: theme.primary,
+    },
+    formContainer: {
+      backgroundColor: theme.card,
+      shadowColor: theme.text,
+    },
+    title: {
+      color: theme.primary,
+    },
+    inputContainer: {
+      borderColor: theme.inputBorder,
+      backgroundColor: theme.inputBackground,
+    },
+    input: {
+      color: theme.inputText,
+    },
+    fieldError: {
+      color: theme.error,
+    },
+    registerText: {
+      color: theme.textSecondary,
+    },
+    registerLink: {
+      color: theme.primary,
+    },
+    debugButtonText: {
+      color: theme.textSecondary,
+    },
+  }
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, dynamicStyles.container]}>
         <View style={styles.logoContainer}>
           <Image
             source={{
@@ -141,11 +179,11 @@ const LoginScreen = () => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.appName}>CineFanatic</Text>
+          <Text style={[styles.appName, dynamicStyles.appName]}>CineFanatic</Text>
         </View>
 
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Iniciar Sesión</Text>
+        <View style={[styles.formContainer, dynamicStyles.formContainer]}>
+          <Text style={[styles.title, dynamicStyles.title]}>Iniciar Sesión</Text>
 
           {error ? (
             <View style={styles.errorContainer}>
@@ -154,11 +192,12 @@ const LoginScreen = () => {
             </View>
           ) : null}
 
-          <View style={styles.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+          <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+            <Ionicons name="mail-outline" size={20} color={theme.inputPlaceholder} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, dynamicStyles.input]}
               placeholder="Correo electrónico"
+              placeholderTextColor={theme.inputPlaceholder}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -166,22 +205,27 @@ const LoginScreen = () => {
               autoCorrect={false}
             />
           </View>
-          {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+          {emailError ? <Text style={[styles.fieldError, dynamicStyles.fieldError]}>{emailError}</Text> : null}
 
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+          <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+            <Ionicons name="lock-closed-outline" size={20} color={theme.inputPlaceholder} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, dynamicStyles.input]}
               placeholder="Contraseña"
+              placeholderTextColor={theme.inputPlaceholder}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={secureTextEntry}
             />
             <TouchableOpacity onPress={() => setSecureTextEntry(!secureTextEntry)} style={styles.eyeIcon}>
-              <Ionicons name={secureTextEntry ? "eye-outline" : "eye-off-outline"} size={20} color="#666" />
+              <Ionicons
+                name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color={theme.inputPlaceholder}
+              />
             </TouchableOpacity>
           </View>
-          {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+          {passwordError ? <Text style={[styles.fieldError, dynamicStyles.fieldError]}>{passwordError}</Text> : null}
 
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isLoading}>
             {isLoading ? (
@@ -192,20 +236,22 @@ const LoginScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>¿No tienes una cuenta? </Text>
+            <Text style={[styles.registerText, dynamicStyles.registerText]}>¿No tienes una cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-              <Text style={styles.registerLink}>Regístrate</Text>
+              <Text style={[styles.registerLink, dynamicStyles.registerLink]}>Regístrate</Text>
             </TouchableOpacity>
           </View>
 
           {/* Botones de depuración */}
           <View style={styles.debugContainer}>
             <TouchableOpacity style={styles.debugButton} onPress={createTestUser}>
-              <Text style={styles.debugButtonText}>Crear usuario de prueba</Text>
+              <Text style={[styles.debugButtonText, dynamicStyles.debugButtonText]}>Crear usuario de prueba</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.debugButton} onPress={handleClearAuth}>
-              <Text style={styles.debugButtonText}>Limpiar datos de autenticación</Text>
+              <Text style={[styles.debugButtonText, dynamicStyles.debugButtonText]}>
+                Limpiar datos de autenticación
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -217,7 +263,6 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#fff",
     padding: 20,
     justifyContent: "center",
   },
@@ -232,14 +277,11 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#032541",
     marginTop: 10,
   },
   formContainer: {
-    backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -248,7 +290,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#032541",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -269,7 +310,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 5,
     marginBottom: 5,
     height: 50,
@@ -286,7 +326,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   fieldError: {
-    color: "#FF6B6B",
     fontSize: 12,
     marginBottom: 10,
     marginLeft: 5,
@@ -313,7 +352,6 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   registerLink: {
-    color: "#032541",
     fontWeight: "bold",
   },
   debugContainer: {
@@ -328,7 +366,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   debugButtonText: {
-    color: "#666",
     textDecorationLine: "underline",
   },
 })

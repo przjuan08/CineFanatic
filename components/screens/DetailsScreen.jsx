@@ -10,18 +10,22 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Dimensions,
+  Alert,
 } from "react-native"
-import { useRoute } from "@react-navigation/native"
+import { useRoute, useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { API_KEY, API_BASE_URL } from "../../assets/config"
 import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 
 const { width } = Dimensions.get("window")
 
 export default function DetailsScreen() {
   const route = useRoute()
-  const { id } = route.params
+  const navigation = useNavigation()
+  const { id, fromFavorites } = route.params || { id: null, fromFavorites: false }
   const { toggleFavorite, isFavorite } = useAuth()
+  const { theme } = useTheme()
 
   const [movie, setMovie] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -44,7 +48,8 @@ export default function DetailsScreen() {
   // Verificar si la película está en favoritos cuando se carga
   useEffect(() => {
     if (id) {
-      setFavoriteStatus(isFavorite(id.toString()))
+      const isMovieFavorite = isFavorite(id.toString())
+      setFavoriteStatus(isMovieFavorite)
     }
   }, [id, isFavorite])
 
@@ -59,7 +64,6 @@ export default function DetailsScreen() {
       }
 
       const data = await response.json()
-
       setMovie(data)
       setLoading(false)
     } catch (error) {
@@ -73,31 +77,39 @@ export default function DetailsScreen() {
     if (id) {
       const success = await toggleFavorite(id.toString())
       if (success) {
-        setFavoriteStatus(!favoriteStatus)
+        const newStatus = !favoriteStatus
+        setFavoriteStatus(newStatus)
+
+        // Mostrar mensaje según la acción realizada
+        if (newStatus) {
+          Alert.alert("Agregado a favoritos", "Esta película ha sido agregada a tus favoritos")
+        } else {
+          Alert.alert("Eliminado de favoritos", "Esta película ha sido eliminada de tus favoritos")
+        }
       }
     }
   }
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#032541" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     )
   }
 
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={60} color="#FF6B6B" />
-        <Text style={styles.errorText}>{error}</Text>
+      <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
+        <Ionicons name="alert-circle-outline" size={60} color={theme.error} />
+        <Text style={[styles.errorText, { color: theme.text }]}>{error}</Text>
       </View>
     )
   }
 
   const renderGenres = () => {
     return movie.genres.map((genre) => (
-      <View key={genre.id} style={styles.genreTag}>
+      <View key={genre.id} style={[styles.genreTag, { backgroundColor: theme.primary }]}>
         <Text style={styles.genreText}>{genre.name}</Text>
       </View>
     ))
@@ -115,10 +127,10 @@ export default function DetailsScreen() {
           }}
           style={styles.castImage}
         />
-        <Text style={styles.castName} numberOfLines={2}>
+        <Text style={[styles.castName, { color: theme.text }]} numberOfLines={2}>
           {person.name}
         </Text>
-        <Text style={styles.castCharacter} numberOfLines={1}>
+        <Text style={[styles.castCharacter, { color: theme.textSecondary }]} numberOfLines={1}>
           {person.character}
         </Text>
       </View>
@@ -126,7 +138,7 @@ export default function DetailsScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.backdropContainer}>
         <Image
           source={{
@@ -145,7 +157,7 @@ export default function DetailsScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.contentContainer}>
+      <View style={[styles.contentContainer, { backgroundColor: theme.background }]}>
         <View style={styles.headerRow}>
           <Image
             source={{
@@ -157,8 +169,8 @@ export default function DetailsScreen() {
           />
 
           <View style={styles.headerInfo}>
-            <Text style={styles.title}>{movie.title}</Text>
-            <Text style={styles.releaseDate}>
+            <Text style={[styles.title, { color: theme.text }]}>{movie.title}</Text>
+            <Text style={[styles.releaseDate, { color: theme.textSecondary }]}>
               {new Date(movie.release_date).toLocaleDateString("es-ES", {
                 year: "numeric",
                 month: "long",
@@ -167,11 +179,11 @@ export default function DetailsScreen() {
             </Text>
             <View style={styles.ratingContainer}>
               <Ionicons name="star" size={20} color="#FFD700" />
-              <Text style={styles.rating}>
+              <Text style={[styles.rating, { color: theme.text }]}>
                 {movie.vote_average.toFixed(1)} ({movie.vote_count} votos)
               </Text>
             </View>
-            <Text style={styles.runtime}>
+            <Text style={[styles.runtime, { color: theme.textSecondary }]}>
               {Math.floor(movie.runtime / 60)}h {movie.runtime % 60}m
             </Text>
           </View>
@@ -180,31 +192,37 @@ export default function DetailsScreen() {
         <View style={styles.genresContainer}>{renderGenres()}</View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Resumen</Text>
-          <Text style={styles.overview}>{movie.overview || "Resumen no disponible"}</Text>
+          <Text style={[styles.sectionTitle, { color: theme.primary }]}>Resumen</Text>
+          <Text style={[styles.overview, { color: theme.text }]}>{movie.overview || "Resumen no disponible"}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Elenco</Text>
+          <Text style={[styles.sectionTitle, { color: theme.primary }]}>Elenco</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.castContainer}>
-            {movie.credits.cast.length > 0 ? renderCast() : <Text>Información del elenco no disponible </Text>}
+            {movie.credits.cast.length > 0 ? (
+              renderCast()
+            ) : (
+              <Text style={{ color: theme.text }}>Información del elenco no disponible </Text>
+            )}
           </ScrollView>
         </View>
 
         <View style={styles.infoSection}>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Estado</Text>
-            <Text style={styles.infoValue}>{estadosPeliculas[movie.status] || movie.status}</Text>
+          <View style={[styles.infoItem, { borderBottomColor: theme.border }]}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Estado</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
+              {estadosPeliculas[movie.status] || movie.status}
+            </Text>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Presupuesto</Text>
-            <Text style={styles.infoValue}>
+          <View style={[styles.infoItem, { borderBottomColor: theme.border }]}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Presupuesto</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
               {movie.budget > 0 ? `$${movie.budget.toLocaleString()}` : "No disponible"}
             </Text>
           </View>
-          <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>Ingresos</Text>
-            <Text style={styles.infoValue}>
+          <View style={[styles.infoItem, { borderBottomColor: theme.border }]}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Ingresos</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
               {movie.revenue > 0 ? `$${movie.revenue.toLocaleString()}` : "No disponible"}
             </Text>
           </View>
@@ -217,7 +235,6 @@ export default function DetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
   },
   loadingContainer: {
     flex: 1,
@@ -232,7 +249,6 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: "#555",
     textAlign: "center",
     marginTop: 16,
   },
@@ -242,6 +258,15 @@ const styles = StyleSheet.create({
   backdropImage: {
     width: "100%",
     height: 220,
+  },
+  backButton: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    zIndex: 10,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20,
+    padding: 8,
   },
   favoriteButton: {
     position: "absolute",
@@ -271,12 +296,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#032541",
     marginBottom: 4,
   },
   releaseDate: {
     fontSize: 14,
-    color: "#666",
     marginBottom: 4,
   },
   ratingContainer: {
@@ -291,7 +314,6 @@ const styles = StyleSheet.create({
   },
   runtime: {
     fontSize: 14,
-    color: "#666",
   },
   genresContainer: {
     flexDirection: "row",
@@ -300,7 +322,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   genreTag: {
-    backgroundColor: "#032541",
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -318,12 +339,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 8,
-    color: "#032541",
   },
   overview: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#333",
   },
   castContainer: {
     flexDirection: "row",
@@ -345,7 +364,6 @@ const styles = StyleSheet.create({
   },
   castCharacter: {
     fontSize: 12,
-    color: "#666",
   },
   infoSection: {
     marginTop: 24,
@@ -356,11 +374,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
   },
   infoLabel: {
     fontSize: 14,
-    color: "#666",
   },
   infoValue: {
     fontSize: 14,

@@ -3,19 +3,21 @@
 import React from "react"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 
-// Importar pantallas
+// Importar pantallas de autenticación
 import SplashScreen from "../screens/SplashScreen"
 import LoginScreen from "../screens/LoginScreen"
 import RegisterScreen from "../screens/RegisterScreen"
-import HomeScreen from "../screens/HomeScreen"
-import DetailsScreen from "../screens/DetailsScreen"
-import ProfileScreen from "../screens/ProfileScreen"
+
+// Importar el navegador de pestañas
+import TabNavigator from "./TabNavigator"
 
 const Stack = createNativeStackNavigator()
 
 export default function AuthNavigator() {
   const { userToken, isLoading } = useAuth()
+  const { theme } = useTheme()
   const [isAppReady, setIsAppReady] = React.useState(false)
 
   // Efecto para verificar el estado inicial de la app
@@ -43,9 +45,9 @@ export default function AuthNavigator() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: "#032541",
+          backgroundColor: theme.headerBackground,
         },
-        headerTintColor: "#fff",
+        headerTintColor: theme.headerText,
         headerTitleStyle: {
           fontWeight: "bold",
         },
@@ -58,16 +60,8 @@ export default function AuthNavigator() {
           <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false }} />
         </>
       ) : (
-        // Rutas de la aplicación
-        <>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ title: "CineFanatic" }} />
-          <Stack.Screen
-            name="Details"
-            component={DetailsScreen}
-            options={({ route }) => ({ title: route.params?.title || "Movie Details" })}
-          />
-          <Stack.Screen name="Profile" component={ProfileScreen} options={{ title: "Mi perfil" }} />
-        </>
+        // Usar el navegador de pestañas para las rutas autenticadas
+        <Stack.Screen name="MainTabs" component={TabNavigator} options={{ headerShown: false }} />
       )}
     </Stack.Navigator>
   )

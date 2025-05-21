@@ -17,11 +17,13 @@ import {
 import { useNavigation } from "@react-navigation/native"
 import { Ionicons } from "@expo/vector-icons"
 import { useAuth } from "../context/AuthContext"
+import { useTheme } from "../context/ThemeContext"
 
 // Asegurarse de que el componente se exporte correctamente
 const RegisterScreen = () => {
   const navigation = useNavigation()
   const { register, error, isLoading } = useAuth()
+  const { theme } = useTheme()
 
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
@@ -106,9 +108,42 @@ const RegisterScreen = () => {
     }
   }
 
+  // Estilos dinámicos basados en el tema
+  const dynamicStyles = {
+    container: {
+      backgroundColor: theme.background,
+    },
+    appName: {
+      color: theme.primary,
+    },
+    formContainer: {
+      backgroundColor: theme.card,
+      shadowColor: theme.text,
+    },
+    title: {
+      color: theme.primary,
+    },
+    inputContainer: {
+      borderColor: theme.inputBorder,
+      backgroundColor: theme.inputBackground,
+    },
+    input: {
+      color: theme.inputText,
+    },
+    fieldError: {
+      color: theme.error,
+    },
+    loginText: {
+      color: theme.textSecondary,
+    },
+    loginLink: {
+      color: theme.primary,
+    },
+  }
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[styles.container, dynamicStyles.container]}>
         <View style={styles.logoContainer}>
           <Image
             source={{
@@ -117,11 +152,11 @@ const RegisterScreen = () => {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.appName}>CineFanatic</Text>
+          <Text style={[styles.appName, dynamicStyles.appName]}>CineFanatic</Text>
         </View>
 
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Crear Cuenta</Text>
+        <View style={[styles.formContainer, dynamicStyles.formContainer]}>
+          <Text style={[styles.title, dynamicStyles.title]}>Crear Cuenta</Text>
 
           {error ? (
             <View style={styles.errorContainer}>
@@ -130,23 +165,25 @@ const RegisterScreen = () => {
             </View>
           ) : null}
 
-          <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={20} color="#666" style={styles.inputIcon} />
+          <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+            <Ionicons name="person-outline" size={20} color={theme.inputPlaceholder} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, dynamicStyles.input]}
               placeholder="Nombre completo"
+              placeholderTextColor={theme.inputPlaceholder}
               value={name}
               onChangeText={setName}
               autoCorrect={false}
             />
           </View>
-          {nameError ? <Text style={styles.fieldError}>{nameError}</Text> : null}
+          {nameError ? <Text style={[styles.fieldError, dynamicStyles.fieldError]}>{nameError}</Text> : null}
 
-          <View style={styles.inputContainer}>
-            <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+          <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+            <Ionicons name="mail-outline" size={20} color={theme.inputPlaceholder} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, dynamicStyles.input]}
               placeholder="Correo electrónico"
+              placeholderTextColor={theme.inputPlaceholder}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -154,37 +191,49 @@ const RegisterScreen = () => {
               autoCorrect={false}
             />
           </View>
-          {emailError ? <Text style={styles.fieldError}>{emailError}</Text> : null}
+          {emailError ? <Text style={[styles.fieldError, dynamicStyles.fieldError]}>{emailError}</Text> : null}
 
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+          <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+            <Ionicons name="lock-closed-outline" size={20} color={theme.inputPlaceholder} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, dynamicStyles.input]}
               placeholder="Contraseña"
+              placeholderTextColor={theme.inputPlaceholder}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={secureTextEntry}
             />
             <TouchableOpacity onPress={() => setSecureTextEntry(!secureTextEntry)} style={styles.eyeIcon}>
-              <Ionicons name={secureTextEntry ? "eye-outline" : "eye-off-outline"} size={20} color="#666" />
+              <Ionicons
+                name={secureTextEntry ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color={theme.inputPlaceholder}
+              />
             </TouchableOpacity>
           </View>
-          {passwordError ? <Text style={styles.fieldError}>{passwordError}</Text> : null}
+          {passwordError ? <Text style={[styles.fieldError, dynamicStyles.fieldError]}>{passwordError}</Text> : null}
 
-          <View style={styles.inputContainer}>
-            <Ionicons name="lock-closed-outline" size={20} color="#666" style={styles.inputIcon} />
+          <View style={[styles.inputContainer, dynamicStyles.inputContainer]}>
+            <Ionicons name="lock-closed-outline" size={20} color={theme.inputPlaceholder} style={styles.inputIcon} />
             <TextInput
-              style={styles.input}
+              style={[styles.input, dynamicStyles.input]}
               placeholder="Confirmar contraseña"
+              placeholderTextColor={theme.inputPlaceholder}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry={secureConfirmTextEntry}
             />
             <TouchableOpacity onPress={() => setSecureConfirmTextEntry(!secureConfirmTextEntry)} style={styles.eyeIcon}>
-              <Ionicons name={secureConfirmTextEntry ? "eye-outline" : "eye-off-outline"} size={20} color="#666" />
+              <Ionicons
+                name={secureConfirmTextEntry ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color={theme.inputPlaceholder}
+              />
             </TouchableOpacity>
           </View>
-          {confirmPasswordError ? <Text style={styles.fieldError}>{confirmPasswordError}</Text> : null}
+          {confirmPasswordError ? (
+            <Text style={[styles.fieldError, dynamicStyles.fieldError]}>{confirmPasswordError}</Text>
+          ) : null}
 
           <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={isLoading}>
             {isLoading ? (
@@ -195,9 +244,9 @@ const RegisterScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>¿Ya tienes una cuenta? </Text>
+            <Text style={[styles.loginText, dynamicStyles.loginText]}>¿Ya tienes una cuenta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.loginLink}>Iniciar sesión</Text>
+              <Text style={[styles.loginLink, dynamicStyles.loginLink]}>Iniciar sesión</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -209,7 +258,6 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#fff",
     padding: 20,
     justifyContent: "center",
   },
@@ -224,14 +272,11 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#032541",
     marginTop: 8,
   },
   formContainer: {
-    backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -240,7 +285,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#032541",
     marginBottom: 20,
     textAlign: "center",
   },
@@ -261,7 +305,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#ddd",
     borderRadius: 5,
     marginBottom: 5,
     height: 50,
@@ -278,7 +321,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   fieldError: {
-    color: "#FF6B6B",
     fontSize: 12,
     marginBottom: 10,
     marginLeft: 5,
@@ -305,7 +347,6 @@ const styles = StyleSheet.create({
     color: "#666",
   },
   loginLink: {
-    color: "#032541",
     fontWeight: "bold",
   },
 })
