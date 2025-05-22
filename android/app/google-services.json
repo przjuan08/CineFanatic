@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "632789719168",
+    "project_id": "cinefanatic-af3a9",
+    "storage_bucket": "cinefanatic-af3a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:632789719168:android:dcd2418103fb3eef71ae65",
+        "android_client_info": {
+          "package_name": "com.przjuan08.CineFanatic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_JoC7tsoCk9bvcRxJZIsUfCQ4EghubUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

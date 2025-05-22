@@ -15,6 +15,13 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
+      },
+      "package": "com.przjuan08.CineFanatic",
+      "googleServicesFile": "./android/app/google-services.json"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "22fc60f5-8b5c-461a-9be5-a0aee68fc5c0"
       }
     }
   }
